@@ -3,6 +3,9 @@ from api import app
 from flask import request, redirect, render_template, jsonify
 from subprocess import Popen, PIPE
 
+# Use to check for valid andrew ID
+import requests
+
 LP_EXTENSIONS = {'pdf', 'txt'}
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024  # 25 Mb limit
 
@@ -30,6 +33,11 @@ def has_andrew_id(request):
     """ Returns True i the request contains a plausible andrewID. Does not
     guarantee that the string is in fact a valid andrewID. """
     # TODO: Test the validity of the andrewID with the directory API!
+    check = requests.get("https://apis.scottylabs.org/directory/v1/andrewID/" + request.form[ANDREW_ID_KEY])
+    
+    # Return false for invalid andrewID
+    if(check.text == "Person not found."):
+        return false
     return request.form[ANDREW_ID_KEY] and len(request.form[ANDREW_ID_KEY]) > 0
 
 @app.route('/printfile', methods=['POST'])
